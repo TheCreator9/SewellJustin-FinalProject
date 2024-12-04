@@ -48,7 +48,52 @@ class World():
         for tile in self.tile_list:
             screen.blit(tile[0], tile[1])
 
+#Class handles all player actions and logic.
+class Player():
+	def __init__(self, x, y):
+		pc_char = pygame.image.load('pc_final.png')
+		self.image = pygame.transform.scale(pc_char, (40, 60))
+		self.rect = self.image.get_rect()
+		self.rect.x = x
+		self.rect.y = y
+		self.vel_y = 0
+		self.jumped = False
 
+	def update(self):
+		dx = 0
+		dy = 0
+
+		#Section gets the key pressed to preform actions of left-right movement and jumping.
+		key = pygame.key.get_pressed()
+		if key[pygame.K_SPACE] and self.jumped == False:
+			self.vel_y = -3
+			self.jumped = True
+		if key[pygame.K_SPACE] == False:
+			self.jumped = False
+		if key[pygame.K_LEFT]:
+			dx -= 1
+		if key[pygame.K_RIGHT]:
+			dx += 1
+
+
+		#Applies gravity to PC.
+		self.vel_y += 0.007
+		if self.vel_y > 10:
+			self.vel_y = 10
+		dy += self.vel_y
+
+		
+
+		#Gets player coordinates.
+		self.rect.x += dx
+		self.rect.y += dy
+
+		if self.rect.bottom > 750:
+			self.rect.bottom = 750
+			dy = 0
+
+		#Renders the player.
+		screen.blit(self.image, self.rect)
 
 
 world_data = [
@@ -72,12 +117,15 @@ world_data = [
 
 def main():
     pygame.init()
+
+    player = Player(100, 750 - 110)
     world = World(world_data)
+
     running = True
     while running:
         screen.blit(bg_img, (0,0))
         world.draw()
-        draw_grid()
+        player.update()
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
