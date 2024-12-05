@@ -6,10 +6,15 @@ resolution = (750, 750)
 screen = pygame.display.set_mode(resolution)
 pygame.display.set_caption('To the Stars!')
 tile_size = 50
+internal_clock = pygame.time.Clock()
+fps = 60
 
 
 #Loads in necessary images
 bg_img = pygame.image.load('bg_img.jpg')
+
+mov_obs = pygame.sprite.Group()
+static_obs = pygame.sprite.Group()
 
 def draw_grid():
     for line in range(0, 15):
@@ -42,6 +47,12 @@ class World():
                     img_rect.y = row_count * tile_size
                     tile = (img, img_rect)
                     self.tile_list.append(tile)
+                if tile == 3:
+                    mov_blackhole = MovingObstacle(col_count * tile_size, row_count * tile_size + 15)
+                    mov_obs.add(mov_blackhole)
+                if tile == 4:
+                    blackhole = StaticObstacle(col_count * tile_size, row_count * tile_size + (tile_size // 2))
+                    static_obs.add(blackhole)
                 col_count += 1
             row_count += 1
 
@@ -63,21 +74,22 @@ class Player():
         self.vel_y = 0
         self.jumped = False
 
-    def update(self):
+    def update(self, death_state):
         dx = 0
         dy = 0
 
-        #Section gets the key pressed to preform actions of left-right movement and jumping.
-        key = pygame.key.get_pressed()
-        if key[pygame.K_SPACE] and self.jumped == False:
-            self.vel_y = -3
-            self.jumped = True
-        if key[pygame.K_SPACE] == False:
-            self.jumped = False
-        if key[pygame.K_LEFT]:
-            dx -= 1
-        if key[pygame.K_RIGHT]:
-            dx += 1
+        #Section gets the key pressed to preform actions of left-right movement and jumping. Makes sure player is not dead in order to execute.
+        if death_state == 0:
+            key = pygame.key.get_pressed()
+            if key[pygame.K_SPACE] and self.jumped == False:
+                self.vel_y = -3
+                self.jumped = True
+            if key[pygame.K_SPACE] == False:
+                self.jumped = False
+            if key[pygame.K_LEFT]:
+                dx -= 1
+            if key[pygame.K_RIGHT]:
+                dx += 1
 
 
         #Applies gravity to PC.
@@ -99,7 +111,11 @@ class Player():
                     dy = tile[1].top - self.rect.bottom
                     self.vel_y = 0
 
-        
+        #Applies collision/death to enemies.
+        if pygame.sprite.spritecollide(self, mov_obs, False):
+            death_state = 1
+        if pygame.sprite.spritecollide(self, static_obs, False):
+            death_state = 1
 
         #Gets player coordinates.
         self.rect.x += dx
@@ -109,10 +125,39 @@ class Player():
             self.rect.bottom = 750
             dy = 0
 
-        #Renders the player.
-        screen.blit(self.image, self.rect)
-        pygame.draw.rect(screen, (255, 255, 255), self.rect, 2)
+        #Renders the player but only if death_state is inactive.
+        if death_state == 0:
+            screen.blit(self.image, self.rect)
+            pygame.draw.rect(screen, (255, 255, 255), self.rect, 2)
 
+        return death_state
+
+
+class MovingObstacle(pygame.sprite.Sprite):
+    def __init__(self, x, y):
+        pygame.sprite.Sprite.__init__(self)
+        self.image = pygame.image.load('blackhole.png')
+        self.rect = self.image.get_rect()
+        self.rect.x = x
+        self.rect.y = y
+        self.direction = 1
+        self.move = 0
+    
+    def update(self):
+        self.rect.x += self.direction
+        self.move += 1
+        if abs(self.move) > 50:
+            self.direction *= -1
+            self.move *= -1
+    
+class StaticObstacle(pygame.sprite.Sprite):
+    def __init__(self, x, y):
+        pygame.sprite.Sprite.__init__(self)
+        blackhole_image = pygame.image.load('blackhole.png')
+        self.image = pygame.transform.scale(blackhole_image, (tile_size, tile_size // 2))
+        self.rect = self.image.get_rect()
+        self.rect.x = x
+        self.rect.y = y
 
 world_data = [
 [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
@@ -128,24 +173,32 @@ world_data = [
 [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
 [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
 [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+[0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 4, 0, 0],
 [1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1]
 ]
 
 world = World(world_data)
 
-
 def main():
     pygame.init()
 
     player = Player(100, 750 - 110)
-    
+    death_state = 0
 
     running = True
     while running:
+        internal_clock.tick(fps)
         screen.blit(bg_img, (0,0))
         world.draw()
-        player.update()
+
+        if death_state == 0:
+            mov_obs.update()
+        
+        mov_obs.draw(screen)
+        static_obs.draw(screen)
+
+
+        death_state = player.update(death_state)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
