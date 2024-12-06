@@ -9,7 +9,6 @@ tile_size = 50
 internal_clock = pygame.time.Clock()
 fps = 60
 
-
 #Loads in necessary images
 bg_img = pygame.image.load('bg_img.jpg')
 restart_UI_orig = pygame.image.load('Restart1.png')
@@ -21,6 +20,7 @@ quit_UI_resize = pygame.transform.scale(quit_UI_orig, ((quit_UI_orig.get_width()
 title_logo_orig  = pygame.image.load('logo2.png')
 title_logo_resize = pygame.transform.scale(title_logo_orig, ((title_logo_orig.get_width() / 1.5), (title_logo_orig.get_height() / 1.5)))
 
+#Group variables for obs & goal sprites.
 mov_obs = pygame.sprite.Group()
 static_obs = pygame.sprite.Group()
 goal_rocket = pygame.sprite.Group()
@@ -30,6 +30,7 @@ def draw_grid():
         pygame.draw.line(screen, (255, 255, 255), (0, line * tile_size), (750, line * tile_size))
         pygame.draw.line(screen, (255, 255, 255), (line * tile_size, 0), (line * tile_size, 750))
 
+#Class handles all UI buttons throughout the game. 
 class Button():
     def __init__(self, x, y, image):
         self.image = image
@@ -55,6 +56,7 @@ class Button():
 
         return was_clicked
 
+#Class handles the world the game is built on.
 class World():
     def __init__(self, data):
         self.tile_list = []
@@ -67,6 +69,8 @@ class World():
         for row in data:
             col_count = 0
             for tile in row:
+                #Following if statements determines what tile to place depending on value.
+                #1 for cloud, 2 for star, 3 & 4 for moving and static obstacles, and 5 for exit.
                 if tile == 1:
                     img = pygame.transform.scale(cloud_img, (tile_size, tile_size))
                     img_rect = img.get_rect()
@@ -96,12 +100,11 @@ class World():
     def draw(self):
         for tile in self.tile_list:
             screen.blit(tile[0], tile[1])
-            pygame.draw.rect(screen, (255, 255, 255), tile[1], 2)
 
 #Class handles all player actions and logic.
 class Player():
     def __init__(self, x, y):
-        self.reset(x,y) #Runs reset method that init start values for player, either on game start or player death.
+        self.reset(x,y)
 
     def update(self, death_state, win_state):
         dx = 0
@@ -117,11 +120,12 @@ class Player():
                 self.jumped = False
             if key[pygame.K_LEFT]:
                 dx -= 1
-                self.direction = -1    
+                self.direction = -1 #Handles sprite flpping.   
             if key[pygame.K_RIGHT]:
                 dx += 1
-                self.direction = 1
+                self.direction = 1 #Handles sprite flpping.
             
+            #Following statement handles the logic of flipping the sprite.
             if self.direction == -1:
                 self.image = pygame.transform.flip(self.pc_char_scaled, True, False)
             elif self.direction == 1:
@@ -136,7 +140,6 @@ class Player():
 
         #Applies collision to blocks
         for tile in world.tile_list:
-            #check for collision in x direction
             if tile[1].colliderect(pygame.Rect(self.rect.x + dx, self.rect.y, self.width, self.height)):
                 dx = 0
             if tile[1].colliderect(pygame.Rect(self.rect.x, self.rect.y + dy, self.width, self.height)):
@@ -186,7 +189,7 @@ class Player():
         self.jumped = False
         self.direction = 0
 
-
+#Class handles all logic for moving blackhole obstacle.
 class MovingObstacle(pygame.sprite.Sprite):
     def __init__(self, x, y):
         pygame.sprite.Sprite.__init__(self)
@@ -204,7 +207,8 @@ class MovingObstacle(pygame.sprite.Sprite):
         if abs(self.move) > 50:
             self.direction *= -1
             self.move *= -1
-    
+
+#Class handles all logic for static blackhole obstacle.     
 class StaticObstacle(pygame.sprite.Sprite):
     def __init__(self, x, y):
         pygame.sprite.Sprite.__init__(self)
@@ -214,6 +218,7 @@ class StaticObstacle(pygame.sprite.Sprite):
         self.rect.x = x
         self.rect.y = y
 
+#Class handles the goal at the end of the game.
 class Exit(pygame.sprite.Sprite):
     def __init__(self, x, y):
         pygame.sprite.Sprite.__init__(self)
@@ -223,6 +228,7 @@ class Exit(pygame.sprite.Sprite):
         self.rect.x = x
         self.rect.y = y
 
+#Following data set constitutes the level design. Inputs values along a grid to determine where objects are placed. Consult the World() class for further info.
 world_data = [
 [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 1],
 [1, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 3, 0, 2, 1],
@@ -241,19 +247,20 @@ world_data = [
 [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
 ]
 
-world = World(world_data)
+world = World(world_data) #Code doesn't work unless this variable is here, I don't know why.
 
 def main():
     pygame.init()
 
+    #Preliminary variables needed for game.
     player = Player(50, 750 - 130)
     death_state = 0
     win_state = 0
     main_menu = True
     win_menu = False
 
+    #Creates objects for each of the buttons.
     restart = Button(screen.get_width() // 2 - 90, screen.get_height() // 2 - 90, restart_UI_resize)
-    
     start_button = Button(screen.get_width() // 2 - 350, screen.get_height() // 2, start_UI_resize)
     exit_button = Button(screen.get_width() // 2 + 150, screen.get_height() // 2, quit_UI_resize)
     exit_button2 = Button(screen.get_width() // 2 - 90, screen.get_height() // 2 - 30, quit_UI_resize)
@@ -263,16 +270,16 @@ def main():
         internal_clock.tick(fps)
         screen.blit(bg_img, (0, 0))
 
+        #If player won, it'll display win menu.
         if win_menu:
-            # Display win menu and handle its buttons
             if restart.draw():
                 player.reset(100, 750 - 110)
                 win_state = 0
                 win_menu = False 
             if exit_button2.draw():
                 running = False
+        #At beginning of game, it'll show main menu.
         elif main_menu:
-            # Display main menu
             screen.blit(title_logo_resize, (screen.get_width() / 2 - 220, screen.get_height() / 2 - 315))
             if start_button.draw():
                 main_menu = False
@@ -284,10 +291,12 @@ def main():
             if death_state == 0 and win_state == 0:
                 mov_obs.update()
 
+            #Draws objects to screen.
             mov_obs.draw(screen)
             static_obs.draw(screen)
             goal_rocket.draw(screen)
 
+            #Updates player info depending on current game state.
             death_state, win_state = player.update(death_state, win_state)
 
             if death_state == 1:
