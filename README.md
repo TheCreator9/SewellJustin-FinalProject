@@ -3,7 +3,7 @@
 ## Demo:
 Consult the following link for a demo: https://vimeo.com/1036613186?share=copy#t=0
 
-##Github Repo:
+## Github Repo:
 Github Repo here: https://github.com/TheCreator9/SewellJustin-FinalProject.git
 
 ## Description:
