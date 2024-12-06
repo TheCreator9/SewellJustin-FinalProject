@@ -118,9 +118,9 @@ class Player():
 
 
         #Applies gravity to PC.
-        self.vel_y += 0.007
-        if self.vel_y > 10:
-            self.vel_y = 10
+        self.vel_y += 0.05
+        if self.vel_y > 1:
+            self.vel_y = 1
         dy += self.vel_y
 
         #Applies collision to blocks
