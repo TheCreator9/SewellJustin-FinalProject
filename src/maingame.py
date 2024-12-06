@@ -107,14 +107,21 @@ class Player():
         if death_state == 0:
             key = pygame.key.get_pressed()
             if key[pygame.K_SPACE] and self.jumped == False:
-                self.vel_y = -3
+                self.vel_y = -4
                 self.jumped = True
             if key[pygame.K_SPACE] == False:
                 self.jumped = False
             if key[pygame.K_LEFT]:
                 dx -= 1
+                self.direction = -1    
             if key[pygame.K_RIGHT]:
                 dx += 1
+                self.direction = 1
+            
+            if self.direction == -1:
+                self.image = pygame.transform.flip(self.pc_char_scaled, True, False)
+            elif self.direction == 1:
+                self.image = self.pc_char_scaled
 
 
         #Applies gravity to PC.
@@ -160,7 +167,8 @@ class Player():
     #Function stores all the necessary values needed for reset on player death.
     def reset(self, x, y):
         pc_char = pygame.image.load('pc_final.png')
-        self.image = pygame.transform.scale(pc_char, (40, 60))
+        self.pc_char_scaled = pygame.transform.scale(pc_char, (40, 60))
+        self.image = self.pc_char_scaled
         self.rect = self.image.get_rect()
         self.rect.x = x
         self.rect.y = y
@@ -168,6 +176,7 @@ class Player():
         self.height = self.image.get_height()
         self.vel_y = 0
         self.jumped = False
+        self.direction = 0
 
 
 class MovingObstacle(pygame.sprite.Sprite):
@@ -199,20 +208,20 @@ class StaticObstacle(pygame.sprite.Sprite):
 
 world_data = [
 [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-[0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0],
-[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-[0, 0, 0, 0, 4, 0, 0, 0, 4, 0, 0, 0, 4, 0, 0],
-[1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1]
+[1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+[1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+[1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+[1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+[1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+[1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+[1, 0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0, 1],
+[1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+[1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 1],
+[1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 1],
+[1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 1],
+[1, 0, 0, 0, 0, 0, 4, 0, 0, 2, 2, 4, 4, 4, 1],
+[1, 0, 0, 2, 2, 2, 0, 2, 2, 2, 2, 0, 0, 0, 1],
+[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
 ]
 
 world = World(world_data)
@@ -220,7 +229,7 @@ world = World(world_data)
 def main():
     pygame.init()
 
-    player = Player(100, 750 - 110)
+    player = Player(50, 750 - 130)
     death_state = 0
     main_menu = True
 
@@ -228,9 +237,6 @@ def main():
     
     start_button = Button(screen.get_width() // 2 - 350, screen.get_height() // 2, start_UI_resize)
     exit_button = Button(screen.get_width() // 2 + 150, screen.get_height() // 2, quit_UI_resize)
-
-    
-
 
     running = True
     while running:
