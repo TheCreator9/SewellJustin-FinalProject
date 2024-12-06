@@ -1,4 +1,4 @@
-# An Average Day
+# To the Stars!
 
 ## Repository Link
 https://github.com/TheCreator9/SewellJustin-FinalProject.git
