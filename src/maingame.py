@@ -1,6 +1,5 @@
 import pygame
 from pygame.locals import *
-import pickle
 
 #Intializes system information/debug.
 resolution = (750, 750)
@@ -174,7 +173,8 @@ class Player():
 class MovingObstacle(pygame.sprite.Sprite):
     def __init__(self, x, y):
         pygame.sprite.Sprite.__init__(self)
-        self.image = pygame.image.load('blackhole.png')
+        blackhole_image = pygame.image.load('blackhole.png')
+        self.image = pygame.transform.scale(blackhole_image, (tile_size, tile_size))
         self.rect = self.image.get_rect()
         self.rect.x = x
         self.rect.y = y
@@ -192,7 +192,7 @@ class StaticObstacle(pygame.sprite.Sprite):
     def __init__(self, x, y):
         pygame.sprite.Sprite.__init__(self)
         blackhole_image = pygame.image.load('blackhole.png')
-        self.image = pygame.transform.scale(blackhole_image, (tile_size, tile_size // 2))
+        self.image = pygame.transform.scale(blackhole_image, (tile_size, tile_size))
         self.rect = self.image.get_rect()
         self.rect.x = x
         self.rect.y = y
@@ -206,7 +206,7 @@ world_data = [
 [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
 [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
 [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+[0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0],
 [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
 [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
 [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
