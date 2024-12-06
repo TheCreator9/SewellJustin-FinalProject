@@ -1,5 +1,6 @@
 import pygame
 from pygame.locals import *
+import pickle
 
 #Intializes system information/debug.
 resolution = (750, 750)
