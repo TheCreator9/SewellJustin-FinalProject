@@ -204,7 +204,7 @@ class MovingObstacle(pygame.sprite.Sprite):
     def update(self):
         self.rect.x += self.direction
         self.move += 1
-        if abs(self.move) > 50:
+        if abs(self.move) > 25:
             self.direction *= -1
             self.move *= -1
 
@@ -231,12 +231,12 @@ class Exit(pygame.sprite.Sprite):
 #Following data set constitutes the level design. Inputs values along a grid to determine where objects are placed. Consult the World() class for further info.
 world_data = [
 [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 1],
-[1, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 3, 0, 2, 1],
-[1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+[1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 1],
+[1, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 3, 0, 0, 1],
 [1, 0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1],
 [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-[1, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-[1, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+[1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+[1, 2, 0, 0, 2, 3, 0, 0, 0, 0, 0, 0, 0, 0, 1],
 [1, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0, 1],
 [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
 [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 1],
