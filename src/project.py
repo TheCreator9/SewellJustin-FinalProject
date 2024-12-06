@@ -171,8 +171,7 @@ class Player():
         #Renders the player but only if death_state and win_state is inactive.
         if death_state == 0 and win_state == 0:
             screen.blit(self.image, self.rect)
-            pygame.draw.rect(screen, (255, 255, 255), self.rect, 2)
-
+            
         return death_state, win_state
 
     #Function stores all the necessary values needed for reset on player death.
