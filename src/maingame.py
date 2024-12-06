@@ -23,6 +23,7 @@ title_logo_resize = pygame.transform.scale(title_logo_orig, ((title_logo_orig.ge
 
 mov_obs = pygame.sprite.Group()
 static_obs = pygame.sprite.Group()
+goal_rocket = pygame.sprite.Group()
 
 def draw_grid():
     for line in range(0, 15):
@@ -86,6 +87,9 @@ class World():
                 if tile == 4:
                     blackhole = StaticObstacle(col_count * tile_size, row_count * tile_size + (tile_size // 2))
                     static_obs.add(blackhole)
+                if tile == 5:
+                    goal = Exit(col_count * tile_size, row_count * tile_size)
+                    goal_rocket.add(goal)
                 col_count += 1
             row_count += 1
 
@@ -99,7 +103,7 @@ class Player():
     def __init__(self, x, y):
         self.reset(x,y) #Runs reset method that init start values for player, either on game start or player death.
 
-    def update(self, death_state):
+    def update(self, death_state, win_state):
         dx = 0
         dy = 0
 
@@ -149,6 +153,10 @@ class Player():
         if pygame.sprite.spritecollide(self, static_obs, False):
             death_state = 1
 
+        #Applies collison/win to exit.
+        if pygame.sprite.spritecollide(self, goal_rocket, False):
+            win_state = 1
+
         #Gets player coordinates.
         self.rect.x += dx
         self.rect.y += dy
@@ -157,12 +165,12 @@ class Player():
             self.rect.bottom = 750
             dy = 0
 
-        #Renders the player but only if death_state is inactive.
-        if death_state == 0:
+        #Renders the player but only if death_state and win_state is inactive.
+        if death_state == 0 and win_state == 0:
             screen.blit(self.image, self.rect)
             pygame.draw.rect(screen, (255, 255, 255), self.rect, 2)
 
-        return death_state
+        return death_state, win_state
 
     #Function stores all the necessary values needed for reset on player death.
     def reset(self, x, y):
@@ -206,15 +214,24 @@ class StaticObstacle(pygame.sprite.Sprite):
         self.rect.x = x
         self.rect.y = y
 
+class Exit(pygame.sprite.Sprite):
+    def __init__(self, x, y):
+        pygame.sprite.Sprite.__init__(self)
+        rocket_image = pygame.image.load('rocket.png')
+        self.image = pygame.transform.scale(rocket_image, (tile_size, tile_size))
+        self.rect = self.image.get_rect()
+        self.rect.x = x
+        self.rect.y = y
+
 world_data = [
+[1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 1],
+[1, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 3, 0, 2, 1],
 [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+[1, 0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1],
 [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-[1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-[1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-[1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-[1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-[1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-[1, 0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0, 1],
+[1, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+[1, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+[1, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0, 1],
 [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
 [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 1],
 [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 1],
@@ -231,19 +248,31 @@ def main():
 
     player = Player(50, 750 - 130)
     death_state = 0
+    win_state = 0
     main_menu = True
+    win_menu = False
 
     restart = Button(screen.get_width() // 2 - 90, screen.get_height() // 2 - 90, restart_UI_resize)
     
     start_button = Button(screen.get_width() // 2 - 350, screen.get_height() // 2, start_UI_resize)
     exit_button = Button(screen.get_width() // 2 + 150, screen.get_height() // 2, quit_UI_resize)
+    exit_button2 = Button(screen.get_width() // 2 - 90, screen.get_height() // 2 - 30, quit_UI_resize)
 
     running = True
     while running:
         internal_clock.tick(fps)
-        screen.blit(bg_img, (0,0))
+        screen.blit(bg_img, (0, 0))
 
-        if main_menu == True:
+        if win_menu:
+            # Display win menu and handle its buttons
+            if restart.draw():
+                player.reset(100, 750 - 110)
+                win_state = 0
+                win_menu = False 
+            if exit_button2.draw():
+                running = False
+        elif main_menu:
+            # Display main menu
             screen.blit(title_logo_resize, (screen.get_width() / 2 - 220, screen.get_height() / 2 - 315))
             if start_button.draw():
                 main_menu = False
@@ -252,27 +281,30 @@ def main():
         else:
             world.draw()
 
-            if death_state == 0:
+            if death_state == 0 and win_state == 0:
                 mov_obs.update()
-            
+
             mov_obs.draw(screen)
             static_obs.draw(screen)
+            goal_rocket.draw(screen)
 
-
-            death_state = player.update(death_state)
+            death_state, win_state = player.update(death_state, win_state)
 
             if death_state == 1:
                 if restart.draw():
                     player.reset(100, 750 - 110)
                     death_state = 0
+            if win_state == 1:
+                win_menu = True
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
 
         pygame.display.update()
-    
+
     pygame.quit()
+
 
 if __name__ == "__main__":
     main() 
