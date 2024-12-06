@@ -13,7 +13,13 @@ fps = 60
 #Loads in necessary images
 bg_img = pygame.image.load('bg_img.jpg')
 restart_UI_orig = pygame.image.load('Restart1.png')
-restart_UI_resize = pygame.transform.scale(restart_UI_orig, ((restart_UI_orig.get_width() * 3), (restart_UI_orig.get_height() * 3))) 
+start_UI_orig = pygame.image.load('Start1.png')
+quit_UI_orig = pygame.image.load('Quit1.png')
+restart_UI_resize = pygame.transform.scale(restart_UI_orig, ((restart_UI_orig.get_width() * 3), (restart_UI_orig.get_height() * 3)))
+start_UI_resize = pygame.transform.scale(start_UI_orig, ((start_UI_orig.get_width() * 3), (start_UI_orig.get_height() * 3)))
+quit_UI_resize = pygame.transform.scale(quit_UI_orig, ((quit_UI_orig.get_width() * 3), (quit_UI_orig.get_height() * 3)))
+title_logo_orig  = pygame.image.load('logo2.png')
+title_logo_resize = pygame.transform.scale(title_logo_orig, ((title_logo_orig.get_width() / 1.5), (title_logo_orig.get_height() / 1.5)))
 
 mov_obs = pygame.sprite.Group()
 static_obs = pygame.sprite.Group()
@@ -215,28 +221,43 @@ def main():
 
     player = Player(100, 750 - 110)
     death_state = 0
+    main_menu = True
 
     restart = Button(screen.get_width() // 2 - 90, screen.get_height() // 2 - 90, restart_UI_resize)
+    
+    start_button = Button(screen.get_width() // 2 - 350, screen.get_height() // 2, start_UI_resize)
+    exit_button = Button(screen.get_width() // 2 + 150, screen.get_height() // 2, quit_UI_resize)
+
+    
+
 
     running = True
     while running:
         internal_clock.tick(fps)
         screen.blit(bg_img, (0,0))
-        world.draw()
 
-        if death_state == 0:
-            mov_obs.update()
-        
-        mov_obs.draw(screen)
-        static_obs.draw(screen)
+        if main_menu == True:
+            screen.blit(title_logo_resize, (screen.get_width() / 2 - 220, screen.get_height() / 2 - 315))
+            if start_button.draw():
+                main_menu = False
+            if exit_button.draw():
+                running = False
+        else:
+            world.draw()
+
+            if death_state == 0:
+                mov_obs.update()
+            
+            mov_obs.draw(screen)
+            static_obs.draw(screen)
 
 
-        death_state = player.update(death_state)
+            death_state = player.update(death_state)
 
-        if death_state == 1:
-            if restart.draw():
-                player.reset(100, 750 - 110)
-                death_state = 0
+            if death_state == 1:
+                if restart.draw():
+                    player.reset(100, 750 - 110)
+                    death_state = 0
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
