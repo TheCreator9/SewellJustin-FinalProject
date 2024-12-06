@@ -91,15 +91,7 @@ class World():
 #Class handles all player actions and logic.
 class Player():
     def __init__(self, x, y):
-        pc_char = pygame.image.load('pc_final.png')
-        self.image = pygame.transform.scale(pc_char, (40, 60))
-        self.rect = self.image.get_rect()
-        self.rect.x = x
-        self.rect.y = y
-        self.width = self.image.get_width()
-        self.height = self.image.get_height()
-        self.vel_y = 0
-        self.jumped = False
+        self.reset(x,y) #Runs reset method that init start values for player, either on game start or player death.
 
     def update(self, death_state):
         dx = 0
@@ -158,6 +150,18 @@ class Player():
             pygame.draw.rect(screen, (255, 255, 255), self.rect, 2)
 
         return death_state
+
+    #Function stores all the necessary values needed for reset on player death.
+    def reset(self, x, y):
+        pc_char = pygame.image.load('pc_final.png')
+        self.image = pygame.transform.scale(pc_char, (40, 60))
+        self.rect = self.image.get_rect()
+        self.rect.x = x
+        self.rect.y = y
+        self.width = self.image.get_width()
+        self.height = self.image.get_height()
+        self.vel_y = 0
+        self.jumped = False
 
 
 class MovingObstacle(pygame.sprite.Sprite):
@@ -230,7 +234,9 @@ def main():
         death_state = player.update(death_state)
 
         if death_state == 1:
-            restart.draw()
+            if restart.draw():
+                player.reset(100, 750 - 110)
+                death_state = 0
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
