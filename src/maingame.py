@@ -12,6 +12,8 @@ fps = 60
 
 #Loads in necessary images
 bg_img = pygame.image.load('bg_img.jpg')
+restart_UI_orig = pygame.image.load('Restart1.png')
+restart_UI_resize = pygame.transform.scale(restart_UI_orig, ((restart_UI_orig.get_width() * 3), (restart_UI_orig.get_height() * 3))) 
 
 mov_obs = pygame.sprite.Group()
 static_obs = pygame.sprite.Group()
@@ -20,6 +22,31 @@ def draw_grid():
     for line in range(0, 15):
         pygame.draw.line(screen, (255, 255, 255), (0, line * tile_size), (750, line * tile_size))
         pygame.draw.line(screen, (255, 255, 255), (line * tile_size, 0), (line * tile_size, 750))
+
+class Button():
+    def __init__(self, x, y, image):
+        self.image = image
+        self.rect = self.image.get_rect()
+        self.rect.x = x
+        self.rect.y = y
+        self.clicked = False
+
+    def draw(self):
+
+        was_clicked = False
+
+        mouse_pos = pygame.mouse.get_pos()
+        if self.rect.collidepoint(mouse_pos):
+            if pygame.mouse.get_pressed()[0] == 1 and self.clicked == False:
+                was_clicked = True
+                self.clicked = True
+
+        if pygame.mouse.get_pressed()[0] == 0:
+            self.clicked = False
+
+        screen.blit(self.image, self.rect)
+
+        return was_clicked
 
 class World():
     def __init__(self, data):
@@ -173,7 +200,7 @@ world_data = [
 [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
 [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
 [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-[0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 4, 0, 0],
+[0, 0, 0, 0, 4, 0, 0, 0, 4, 0, 0, 0, 4, 0, 0],
 [1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1]
 ]
 
@@ -184,6 +211,8 @@ def main():
 
     player = Player(100, 750 - 110)
     death_state = 0
+
+    restart = Button(screen.get_width() // 2 - 90, screen.get_height() // 2 - 90, restart_UI_resize)
 
     running = True
     while running:
@@ -199,6 +228,9 @@ def main():
 
 
         death_state = player.update(death_state)
+
+        if death_state == 1:
+            restart.draw()
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
